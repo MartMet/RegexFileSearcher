@@ -12,7 +12,7 @@ namespace RegexFileSearcher
         public static IEnumerable<FilePath> GetCompressedFiles(FilePath filePath)
         {
             List<FilePath> results = new List<FilePath>();
-            if (!IsZipFile(filePath))
+            if (!IsZipFile(filePath.Path))
             {
                 return results;
             }
@@ -36,8 +36,9 @@ namespace RegexFileSearcher
         {
             foreach (ZipArchiveEntry archiveEntry in archiveEntries)
             {
-                FilePath compressedFilePath = new FilePath(archiveEntry.FullName);
-                if (IsZipFile(compressedFilePath))
+                string archiveEntryName = archiveEntry.FullName;
+                filePath.CompressedFile = new FilePath(archiveEntryName);
+                if (IsZipFile(archiveEntryName))
                 {
                     Stream entryStream = null;
                     try
@@ -51,7 +52,8 @@ namespace RegexFileSearcher
 
                     if (entryStream != null)
                     {
-                        foreach (FilePath compressedFile in GetCompressedFiles(compressedFilePath, entryStream))
+                        var innerFilePath = new FilePath(archiveEntryName, filePath);
+                        foreach (FilePath compressedFile in GetCompressedFiles(filePath.CompressedFile, entryStream))
                         {
                             yield return compressedFile;
                         }
@@ -59,7 +61,7 @@ namespace RegexFileSearcher
                 }
                 else
                 {
-                    yield return new FilePath(filePath.Path, compressedFilePath);
+                    yield return filePath;
                 }
             }
         }
@@ -81,9 +83,9 @@ namespace RegexFileSearcher
             return results;
         }
 
-        private static bool IsZipFile(FilePath filePath)
+        private static bool IsZipFile(string fileName)
         {
-            string extension = Path.GetExtension(filePath.Path).ToLower();
+            string extension = Path.GetExtension(fileName).ToLower();
             return extension == ".zip" || extension == ".gz";
         }
     }

@@ -8,7 +8,7 @@ namespace RegexFileSearcher
 {
     public class FilePath : IConvertible
     {
-        public FilePath CompressedFile { get; }
+        public FilePath CompressedFile { get; set; }
 
         public string Path { get; }
 
